@@ -1,0 +1,8 @@
+-R theories Refinement
+-R _build/default/theories Refinement
+
+-arg -w -arg -notation-overridden
+-arg -w -arg -redundant-canonical-projection
+-arg -w -arg -projection-no-head-constant
+-arg -w -arg -ambiguous-paths
+-arg -w -arg -uniform-inheritance
