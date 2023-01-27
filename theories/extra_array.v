@@ -121,7 +121,7 @@ Definition eq_array_rel {T : Type} (r : rel T) (a b : array T):=
   all_pair (fun x y=> r x y) a b.
 
 Definition eq_array_int (a b : array Uint63.int):=
-  eq_array_rel eqb a b.
+  eq_array_rel Uint63.eqb a b.
 
 Definition lex_array_rel_ {T : Type} (r : T -> T -> comparison) (a b : array T) :=
   fold_pair 
@@ -540,7 +540,7 @@ Lemma eq_array_intP (a b : array Uint63.int):
   (eq_array_int a b).
 Proof.
 rewrite /eq_array_int.
-apply/(iffP (eq_array_relP a b eqb))=> -[-> h]; 
+apply/(iffP (eq_array_relP a b Uint63.eqb))=> -[-> h]; 
   split=> // i ?; exact/eqb_spec/h.
 Qed.
 
