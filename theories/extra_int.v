@@ -163,6 +163,17 @@ move: (int_thresholdP x); rewrite -[X in x < X](prednK int_threshold0).
 exact/ltnSE.
 Qed.
 
+Canonical int_latticeType := LatticeType int int63_orderMixin.
+Canonical int_bLatticeType := BLatticeType int (BottomMixin le0int).
+Canonical int_tLatticeType := TBLatticeType int (TopMixin leintT).
+Canonical int_distrLatticeType := DistrLatticeType int int63_orderMixin.
+Canonical int_bDistrLatticeType := [bDistrLatticeType of int].
+Canonical int_tbDistrLatticeType := [tbDistrLatticeType of int].
+Canonical int_orderType := OrderType int int63_orderMixin.
+Canonical int_finLatticeType := [finLatticeType of int].
+Canonical int_finDistrLatticeType := [finDistrLatticeType of int].
+Canonical int_finOrderType := [finOrderType of int].
+(*
 Canonical int_bPOrderType := BPOrderType int (BottomMixin le0int).
 Canonical int_tPOrderType := TPOrderType int (TopMixin leintT).
 Canonical int_tbPOrderType := [tbPOrderType of int].
@@ -200,6 +211,7 @@ Canonical int_finDistrLatticeType :=  [finDistrLatticeType of int].
 Canonical int_finTBDistrLatticeType :=  [finTBDistrLatticeType of int].
 Canonical int_finOrderType := [finOrderType of int].
 Canonical int_finTBOrderType := [finTBOrderType of int].
+*)
 
 (* -------------------------------------------------------------------- *)
 
