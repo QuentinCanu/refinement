@@ -1,7 +1,8 @@
 (* -------------------------------------------------------------------- *)
 From Coq      Require Import Uint63 BinNat.
-From mathcomp Require Import all_ssreflect.
+From mathcomp Require Import all_ssreflect all_algebra.
 Require Import extra_misc.
+From Trakt Require Import Trakt.
 
 (* -------------------------------------------------------------------- *)
 Set   Implicit Arguments.
@@ -13,6 +14,7 @@ Unset SsrOldRewriteGoalsOrder.
 Import Order.Theory.
 
 (* -------------------------------------------------------------------- *)
+Notation int := PrimInt63.int.
 Coercion int_to_nat (x : int) : nat :=
   BinInt.Z.to_nat (to_Z x).
 
@@ -645,3 +647,101 @@ by rewrite iotaS_rcons add0n map_rcons foldl_rcons IH /=.
 Qed.
 
 End Ifold.
+
+Section TraktTest.
+
+(* T : int; T' : nat; f : int_to_nat; g : nat_to_int *)
+
+(* Lemma int_to_natK_sym: forall x : int, x = nat_to_int x.
+Proof. by move=> ?; rewrite int_to_natK. Qed.
+
+Trakt Add Embedding int nat 
+  int_to_nat nat_to_int int_to_natK_sym nat_to_intK int_thresholdP.
+
+Lemma equality_trakt: forall x y : int, (x =? y)%uint63 = (x == y)%nat.
+Proof. exact/eqEint. Qed.
+
+Trakt Add Relation 2 nat (fun x y => (x =? y)%uint63) 
+  (fun x y : nat => (x == y)%nat) equality_trakt.
+Trakt Add Relation 2 nat (fun x y => (x <? y)%uint63)
+  (fun x y : nat => (x < y)%nat) ltEint_nat.
+Trakt Add Relation 2 nat (fun x y => (x <=? y)%uint63)
+  (fun x y : nat => (x <= y)%nat) leEint_nat. *)
+
+Definition I_K := 'Z_(int_threshold).
+
+Lemma Zp_trunc_KE: (Zp_trunc int_threshold).+2 = int_threshold.
+Proof.
+rewrite /Zp_trunc !prednK //;
+  [rewrite ltn_predRL; exact:int_threshold1|exact:int_threshold0].
+Qed.
+
+Program Definition int63_to_I_K (x : int) : I_K := @Ordinal _ (int_to_nat x) _.
+Next Obligation. rewrite Zp_trunc_KE; exact: int_thresholdP. Qed.
+
+Definition I_K_to_int63 (x : I_K):= nat_to_int x.
+
+Lemma gof_int63: forall x : int, x = I_K_to_int63 (int63_to_I_K x).
+Proof.
+by move=> x /=; rewrite /I_K_to_int63 /int63_to_I_K /= int_to_natK.
+Qed.
+
+Lemma fog_int63: forall x : I_K, int63_to_I_K (I_K_to_int63 x) = x.
+Proof.
+move=> x; apply/val_inj=> /=; case: x=> x ? /=.
+by rewrite nat_to_intK //= inE -Zp_trunc_KE.
+Qed.
+
+Trakt Add Embedding int I_K int63_to_I_K I_K_to_int63 (gof_int63) (fog_int63).
+
+Lemma int63_eq: forall x y : int, (x =? y)%uint63 = 
+  (int63_to_I_K x == int63_to_I_K y).
+Proof. by move=> x y; rewrite eqEint -val_eqE /=. Qed.
+
+Trakt Add Relation 2 (fun x y : int => (x =? y)%uint63)
+  (fun x y : I_K => (x == y)) int63_eq.
+
+Definition add_I_K (x y : I_K) : I_K := Zp_add x y.
+
+Lemma int63_to_Z_ge0 (x : int): BinInt.Z.le Z0 (to_Z x).
+Proof. by case: (to_Z_bounded x). Qed.
+
+Lemma wB_def: BinInt.Z.to_nat wB = int_threshold.
+Proof.
+Admitted.
+
+Lemma int63_add: forall x y : int,
+  int63_to_I_K (x + y)%uint63 = add_I_K (int63_to_I_K x) (int63_to_I_K y).
+Proof.
+move=> x y; apply/val_inj=> /=.
+rewrite /int_to_nat Zp_trunc_KE add_spec.
+rewrite Znat.Z2Nat.inj_mod //;
+  first by (apply:BinInt.Z.add_nonneg_nonneg; exact:int63_to_Z_ge0).
+rewrite Znat.Z2Nat.inj_add; try exact:int63_to_Z_ge0.
+rewrite wB_def plusE.
+suff: forall m n, PeanoNat.Nat.modulo n m = 
+  n %% m by [].
+case=> //=; rewrite /modn /=.
+move=> m d.
+have:=(PeanoNat.Nat.divmod_spec d m 0 m)=> /(_ (le_n _)).
+rewrite multE plusE minusE.
+case: (PeanoNat.Nat.divmod _ _ _ _)=> a b.
+rewrite muln0 subnn !addn0.
+case=> -> bm /=; rewrite /modn_rec mulSn.
+elim: a=> /= [|a]; first rewrite muln0 !addn0 /= add0n.
+{ have:=leq_subr b m; move: (m - b).
+  case: m {bm}=> [|m]; first by (move=> ?; rewrite leqn0=> /eqP ->).
+  by case=> [|t] //=; rewrite -subn_eq0=> /eqP ->.
+}
+{ 
+  rewrite -addnE.
+  set t1 := (_ + _); set t2 := (_ - m).
+  suff ->: t2 = t1.+1 by [].
+  rewrite /t2 -!addnS mulnS addnA [a + m]addnC -!addnA.
+  by rewrite addKn.
+}
+Qed.
+
+Trakt Add Symbol Uint63.add I_K add_I_K int63_add.
+
+End TraktTest.
