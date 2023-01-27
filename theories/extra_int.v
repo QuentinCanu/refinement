@@ -652,10 +652,10 @@ Section TraktTest.
 
 (* T : int; T' : nat; f : int_to_nat; g : nat_to_int *)
 
-(* Lemma int_to_natK_sym: forall x : int, x = nat_to_int x.
+Lemma int_to_natK_sym: forall x : int, x = nat_to_int (int_to_nat x).
 Proof. by move=> ?; rewrite int_to_natK. Qed.
 
-Trakt Add Embedding int nat 
+Trakt Add Embedding int nat
   int_to_nat nat_to_int int_to_natK_sym nat_to_intK int_thresholdP.
 
 Lemma equality_trakt: forall x y : int, (x =? y)%uint63 = (x == y)%nat.
@@ -666,7 +666,7 @@ Trakt Add Relation 2 nat (fun x y => (x =? y)%uint63)
 Trakt Add Relation 2 nat (fun x y => (x <? y)%uint63)
   (fun x y : nat => (x < y)%nat) ltEint_nat.
 Trakt Add Relation 2 nat (fun x y => (x <=? y)%uint63)
-  (fun x y : nat => (x <= y)%nat) leEint_nat. *)
+  (fun x y : nat => (x <= y)%nat) leEint_nat.
 
 Definition I_K := 'Z_(int_threshold).
 
@@ -719,29 +719,16 @@ rewrite Znat.Z2Nat.inj_mod //;
   first by (apply:BinInt.Z.add_nonneg_nonneg; exact:int63_to_Z_ge0).
 rewrite Znat.Z2Nat.inj_add; try exact:int63_to_Z_ge0.
 rewrite wB_def plusE.
-suff: forall m n, PeanoNat.Nat.modulo n m = 
-  n %% m by [].
-case=> //=; rewrite /modn /=.
-move=> m d.
-have:=(PeanoNat.Nat.divmod_spec d m 0 m)=> /(_ (le_n _)).
-rewrite multE plusE minusE.
-case: (PeanoNat.Nat.divmod _ _ _ _)=> a b.
-rewrite muln0 subnn !addn0.
-case=> -> bm /=; rewrite /modn_rec mulSn.
-elim: a=> /= [|a]; first rewrite muln0 !addn0 /= add0n.
-{ have:=leq_subr b m; move: (m - b).
-  case: m {bm}=> [|m]; first by (move=> ?; rewrite leqn0=> /eqP ->).
-  by case=> [|t] //=; rewrite -subn_eq0=> /eqP ->.
-}
-{ 
-  rewrite -addnE.
-  set t1 := (_ + _); set t2 := (_ - m).
-  suff ->: t2 = t1.+1 by [].
-  rewrite /t2 -!addnS mulnS addnA [a + m]addnC -!addnA.
-  by rewrite addKn.
-}
+suff ->: forall m n, m %% n = PeanoNat.Nat.modulo m n by [].
+move=> m [|n] //.
+rewrite [in RHS](divn_eq m n.+1).
+rewrite addnC PeanoNat.Nat.mod_add //.
+rewrite PeanoNat.Nat.mod_small //.
+by apply/ssrnat.ltP/ltn_pmod.
 Qed.
 
 Trakt Add Symbol Uint63.add I_K add_I_K int63_add.
+
+
 
 End TraktTest.
