@@ -178,7 +178,6 @@ move=> addh mulh x0h.
 apply/rel_equiv_func2;
   [exact:rel_equiv_refl|exact:rel_equiv_refl|exact:rel_comp_eqR|].
 by apply/rel_comp_func2; [apply:rel_array_dot|apply:rel_cV_dot].
-Check rel_comp_func2.
 Qed.
 
 Lemma rel_point_mul_row_mx (m n : nat) addf mulf x0:
