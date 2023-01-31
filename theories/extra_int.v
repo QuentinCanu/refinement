@@ -773,17 +773,31 @@ Proof.
 by move=> x /=; rewrite /ord63_to_int63 /int63_to_ord63 /= int63_to_natK.
 Qed.
 
+Lemma int63_to_ord63K_sym: forall x : int63, ord63_to_int63 (int63_to_ord63 x) = x.
+Proof. by move=> ?; rewrite -int63_to_ord63K. Qed.
+
 Lemma ord63_to_int63K: forall x : ord63, int63_to_ord63 (ord63_to_int63 x) = x.
 Proof.
 move=> x; apply/val_inj=> /=; case: x=> x ? /=.
 by rewrite nat_to_int63K //= inE -Zp_trunc_ord63E.
 Qed.
 
+Lemma ord63_to_int63K_sym: forall x : ord63, x = int63_to_ord63 (ord63_to_int63 x).
+Proof. by move=> ?; rewrite ord63_to_int63K. Qed. 
+
 Trakt Add Embedding int63 ord63 int63_to_ord63 ord63_to_int63 int63_to_ord63K ord63_to_int63K.
+Trakt Add Embedding ord63 int63 ord63_to_int63 int63_to_ord63 ord63_to_int63K_sym int63_to_ord63K_sym.
 
 Lemma int63_eq: forall x y : int63, (x =? y)%uint63 = 
   (int63_to_ord63 x == int63_to_ord63 y).
 Proof. by move=> x y; rewrite eqEint63 -val_eqE /=. Qed.
+
+Lemma ord63_eq: forall x y: ord63, (x == y) =
+  (ord63_to_int63 x =? ord63_to_int63 y)%uint63.
+Proof.
+move=> x y; rewrite -[in LHS](ord63_to_int63K x) -[in LHS](ord63_to_int63K y).
+by rewrite int63_eq.
+Qed.
 
 Trakt Add Relation 2 (fun x y : int63 => (x =? y)%uint63)
   (fun x y : ord63 => (x == y)) int63_eq.
@@ -844,5 +858,15 @@ Proof. by rewrite /ord63_lt=> x y /=; rewrite -ltEint63. Qed.
 
 Trakt Add Relation 2 (Uint63.leb) ord63_le int63_le.
 Trakt Add Relation 2 (Uint63.ltb) ord63_lt int63_lt.
+
+Goal forall i j : int63, (i <? j)%uint63 -> (i <=? j)%uint63.
+trakt ord63 bool.
+Abort.
+
+Trakt Add Conversion (@eq_op).
+
+Goal forall i : int63, (i =? i)%uint63.
+Fail trakt ord63 bool.
+Abort.
 
 End Int63Ordinal.
