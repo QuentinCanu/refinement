@@ -333,24 +333,43 @@ End Misc.
 
 Section BigQRat.
 
-Definition bigQ_to_rat (bq : bigQ) : rat :=
-  let q := Qreduction.Qred [bq]%bigQ in
-  ((Z2int (QArith_base.Qnum q))%:Q / (Z2int (Zpos (QArith_base.Qden q)))%:Q)%R.
+Definition bigQ_to_rat (q : bigQ) : rat :=
+  ((Z2int (QArith_base.Qnum [q]%bigQ))%:Q / 
+  (Z2int (Zpos (QArith_base.Qden [q]%bigQ)))%:Q)%R.
 
 Definition rat_to_bigQ (q : rat) : bigQ :=
   let n := BigZ.of_Z (int2Z (numq q)) in
   let d := BigN.N_of_Z (int2Z (denq q)) in
   (n # d)%bigQ.
 
-Lemma bigQ_to_ratK: forall x : bigQ, x = rat_to_bigQ (bigQ_to_rat x).
+Definition cond_bigQ:= BigQ.Reduced.
+
+(* f : rat -> bigQ, g : bigQ -> rat*)
+
+Lemma cond_rat_to_bigQ: forall x : rat, cond_bigQ (rat_to_bigQ x).
+Proof.
+(* case=> -[n d] /=.
+rewrite /rat_to_bigQ /numq /denq /=.
+case/andP=> d0 nd_prime; rewrite /cond_bigQ /BigQ.Reduced.
+rewrite BigQ.strong_spec_red.
+apply/Qcanon.Qred_iff=> /=.
+rewrite /int2Z.
+case: d d0 nd_prime=> [[|d]|] //=. *)
+Admitted.
+
+Lemma rat_to_bigQK: forall x : rat, x = bigQ_to_rat (rat_to_bigQ x).
 Proof.
 Admitted.
 
-
-Lemma rat_to_bigQK: forall x : rat, bigQ_to_rat (rat_to_bigQ x) = x.
+Lemma bigQ_to_ratK: forall x : bigQ, cond_bigQ x ->
+  rat_to_bigQ (bigQ_to_rat x) = x.
 Proof.
 Admitted.
 
-Trakt Add Embedding bigQ rat bigQ_to_rat rat_to_bigQ bigQ_to_ratK rat_to_bigQK.
+Trakt Add Embedding rat bigQ rat_to_bigQ bigQ_to_rat rat_to_bigQK bigQ_to_ratK cond_rat_to_bigQ.
+
+Goal fracq (3,6)%R = fracq (1,2)%R.
+trakt bigQ Prop. rewrite /fracq /= /fracq_opt_subdef /=.
+Abort.
 
 End BigQRat.
