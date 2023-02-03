@@ -218,7 +218,10 @@ Goal forall x : int63, (x + x)%uint63 = x.
 trakt ord63 Prop.
 Abort.
 
+Set Printing All.
 Goal forall x : ord63, (x + x)%R = x.
+rewrite -?[GRing.Zmodule.sort _]/ord63.
+rewrite -?[GRing.Ring.sort _]/ord63.
 rewrite -[@GRing.add _]/ord63_add.
 trakt int63 Prop.
 Abort.
