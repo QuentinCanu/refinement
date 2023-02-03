@@ -329,47 +329,178 @@ case: g => [|g|g].
 by move: (BinInt.Z.gcd_nonneg n (Zpos d)) => + _ => /[swap] <-.
 Qed.
 
+Lemma BigQ_red_den_nonzero q :
+  match BigQ.red q with BigQ.Qz _ => True | BigQ.Qq _ d => [d]%bigN <> Z0 end.
+Proof.
+case: q => [//|n d] /=.
+rewrite /BigQ.norm.
+rewrite BigN.spec_compare.
+case: BinInt.Z.compare_spec => [| |//] Hgcd.
+{ rewrite /BigQ.check_int BigN.spec_compare.
+  case BinInt.Z.compare_spec => [//| |//] Hd.
+  apply: BigNumPrelude.Zlt0_not_eq.
+  move: Hd; exact: BinInt.Z.lt_trans. }
+rewrite /BigQ.check_int BigN.spec_compare.
+case BinInt.Z.compare_spec => [//| |//] Hd.
+apply: BigNumPrelude.Zlt0_not_eq.
+move: Hd; exact: BinInt.Z.lt_trans.
+Qed.
+
 End Misc.
 
 Section BigQRat.
 
-Definition bigQ_to_rat (q : bigQ) : rat :=
-  ((Z2int (QArith_base.Qnum [q]%bigQ))%:Q / 
-  (Z2int (Zpos (QArith_base.Qden [q]%bigQ)))%:Q)%R.
+Definition bigQ_to_rat (bq : bigQ) :=
+  let q := Qreduction.Qred [bq]%bigQ in
+  ((Z2int (QArith_base.Qnum q))%:Q / (Z2int (Zpos (QArith_base.Qden q)))%:Q)%R.
 
-Definition rat_to_bigQ (q : rat) : bigQ :=
-  let n := BigZ.of_Z (int2Z (numq q)) in
-  let d := BigN.N_of_Z (int2Z (denq q)) in
-  (n # d)%bigQ.
-
-Definition cond_bigQ:= BigQ.Reduced.
-
-(* f : rat -> bigQ, g : bigQ -> rat*)
-
-Lemma cond_rat_to_bigQ: forall x : rat, cond_bigQ (rat_to_bigQ x).
+Lemma ratBigQ_red x y : bigQ_to_rat y = x ->
+  match BigQ.red y with
+  | BigQ.Qz n => numq x = Z2int [n]%bigZ /\ denq x = 1%R
+  | BigQ.Qq n d => numq x = Z2int [n]%bigZ /\ denq x = Z2int [d]%bigN
+  end.
 Proof.
-(* case=> -[n d] /=.
-rewrite /rat_to_bigQ /numq /denq /=.
-case/andP=> d0 nd_prime; rewrite /cond_bigQ /BigQ.Reduced.
-rewrite BigQ.strong_spec_red.
-apply/Qcanon.Qred_iff=> /=.
-rewrite /int2Z.
-case: d d0 nd_prime=> [[|d]|] //=. *)
+case: (ratP x) => nx dx nx_dx_coprime {x}.
+rewrite /bigQ_to_rat -BigQ.strong_spec_red.
+have ry_red : Qreduction.Qred [BigQ.red y]%bigQ = [BigQ.red y]%bigQ.
+{ by rewrite BigQ.strong_spec_red Qcanon.Qred_involutive. }
+have ry_dneq0 := BigQ_red_den_nonzero y.
+case: (BigQ.red y) ry_dneq0 ry_red => [ny _ _|ny dy dy_neq0].
+{ rewrite /BigQ.to_Q /QArith_base.Qnum /QArith_base.Qden GRing.mulr1.
+  move=> /(f_equal ( *%R^~ dx.+1%:~R)%R).
+  rewrite GRing.mulfVK ?mulrz_neq0 // -intrM => /intr_inj nx_eq.
+  have dx_1 : (dx.+1 = 1)%nat.
+  { by move: nx_dx_coprime => /eqP <-; rewrite -nx_eq abszM /= gcdnC gcdnMl. }
+    by rewrite -nx_eq dx_1 GRing.mulr1. }
+rewrite /BigQ.to_Q ifF ?BigN.spec_eqb ?BinInt.Z.eqb_neq //.
+rewrite Qcanon.Qred_iff ZgcdE -[Zpos 1]/(BinInt.Z.of_nat 1%nat) => /Znat.Nat2Z.inj.
+rewrite /QArith_base.Qnum /QArith_base.Qden nat_of_pos_Z_to_pos => /eqP ny_dy_coprime.
+move=> /eqP; rewrite rat_eqE !coprimeq_num // !coprimeq_den //=.
+rewrite !Num.Theory.gtr0_sg //; first exact/ssrnat.ltP/Pos2Nat.is_pos.
+rewrite !GRing.mul1r => /andP[/eqP <-].
+rewrite ifF; [exact/eqP/eqP/Num.Theory.lt0r_neq0/ssrnat.ltP/Pos2Nat.is_pos|].
+rewrite -!abszE !absz_nat => /eqP[<-]; split=> [//|].
+rewrite -[LHS]/(Z2int (Zpos (BinInt.Z.to_pos [dy]%bigN))) BinInt.Z2Pos.id //.
+exact: BigQ.N_to_Z_pos.
+Qed.
+
+Lemma bigQ_to_rat_red (q : bigQ):
+  match BigQ.red q with
+  | BigQ.Qz n => numq (bigQ_to_rat q) = Z2int [n]%bigZ /\ denq (bigQ_to_rat q) = 1%R
+  | BigQ.Qq n d => numq (bigQ_to_rat q) = Z2int [n]%bigZ /\ denq (bigQ_to_rat q) = Z2int [d]%bigN
+  end.
+Proof. exact/ratBigQ_red. Qed.
+
+Definition int_to_bigQ (q : int) : bigQ :=
+  BigQ.Qz (BigZ.of_Z (int2Z q)).
+
+Lemma int_to_bigQK (x : int): bigQ_to_rat (int_to_bigQ x) = ratz x.
+Proof.
+rewrite /bigQ_to_rat /= Z_ggcd_1_r /=.
+rewrite Pos2Nat.inj_1 GRing.divr1 BigZ.spec_of_Z int2ZK.
+by rewrite ratzE.
+Qed.
+
+Lemma bigQ_to_rat_opp (x : bigQ): bigQ_to_rat (BigQ.opp x) = (- (bigQ_to_rat x))%R. 
+Proof. 
+rewrite /bigQ_to_rat.
+rewrite BigQ.strong_spec_opp Qreduction.Qred_opp [in LHS]/QArith_base.Qnum /=.
+by rewrite Z2int_opp mulrNz GRing.mulNr.
+Qed.
+
+Lemma int_to_bigQ_opp (x : int): bigQ_to_rat (BigQ.opp (int_to_bigQ x)) = (- (ratz x))%R.
+Proof.
+by rewrite bigQ_to_rat_opp int_to_bigQK.
+Qed.
+
+Lemma bigQ_red_inv (x : bigQ):
+  (BigQ.inv (BigQ.red x) == BigQ.red (BigQ.inv x))%bigQ.
+Proof.
 Admitted.
 
-Lemma rat_to_bigQK: forall x : rat, x = bigQ_to_rat (rat_to_bigQ x).
+Lemma bigQ_to_rat_red_always (x : bigQ):
+  bigQ_to_rat x = bigQ_to_rat (BigQ.red x).
+Proof.
+by rewrite /bigQ_to_rat BigQ.strong_spec_red Qcanon.Qred_involutive.
+Qed.
+
+(* Lemma foo (x : bigQ):
+  bigQ_to_rat (BigQ.inv x) = bigQ_to_rat (BigQ.inv (BigQ.red x)).
+Proof.
+rewrite bigQ_to_rat_red_always /bigQ_to_rat.
+by move/Qreduction.Qred_complete: (bigQ_red_inv x)=> <-.
+Qed. *)
+
+Lemma bigQ_to_rat_inv (x : bigQ):
+  bigQ_to_rat (BigQ.inv x) = ((bigQ_to_rat x)^-1)%R.
 Proof.
 Admitted.
 
-Lemma bigQ_to_ratK: forall x : bigQ, cond_bigQ x ->
-  rat_to_bigQ (bigQ_to_rat x) = x.
+(* rewrite foo -[bigQ_to_rat x]divq_num_den.
+move: (bigQ_to_rat_red x).
+case: (BigQ.red x)=> [z|n d] [-> ->].
+- rewrite /bigQ_to_rat.
+  move/Qreduction.Qred_complete: (BigQ.spec_inv (BigQ.Qz z))=> ->. 
+  rewrite /BigQ.to_Q /= /QArith_base.Qinv /=.
+  case: [z]%bigZ=> /=; first by rewrite Pos2Nat.inj_1 GRing.divr1 rat0 GRing.invr0.
+  + by move=> p; rewrite GRing.invf_div Pos2Nat.inj_1.
+  + by move=> p; rewrite GRing.invf_div Pos2Nat.inj_1 /= !mulrNz GRing.invrN GRing.mulrN GRing.mulNr. 
+- rewrite /bigQ_to_rat.
+  move/Qreduction.Qred_complete: (BigQ.spec_inv (n # d))=> ->.
+  rewrite /QArith_base.Qinv.
+  case: (QArith_base.Qnum [n # d]%bigQ).
+  + rewrite /=. *)
+
+Lemma int_to_bigQ_inv (x : int): 
+  bigQ_to_rat (BigQ.inv (int_to_bigQ x)) = fracq (1%R, x).
+Proof. by rewrite bigQ_to_rat_inv int_to_bigQK. Qed.
+
+Lemma bigQ_to_rat_mul (x y : bigQ): bigQ_to_rat (BigQ.mul x y) = (bigQ_to_rat x * bigQ_to_rat y)%R.
 Proof.
-Admitted.
+rewrite /bigQ_to_rat.
+rewrite (Qreduction.Qred_complete _ _ (BigQ.spec_mul _ _)).
+case: (BigQ.to_Q x) => nx dx {x}.
+case: (BigQ.to_Q y) => ny dy {y}.
+rewrite /QArith_base.Qmult !Z2int_Qred /=.
+rewrite Z2int_mul Pos2Nat.inj_mul multE.
+rewrite PoszM !intrM.
+by rewrite [RHS]GRing.mulf_div.
+Qed.
 
-Trakt Add Embedding rat bigQ rat_to_bigQ bigQ_to_rat rat_to_bigQK bigQ_to_ratK cond_rat_to_bigQ.
+Lemma int_to_bigQ_mul (x y : int):
+  bigQ_to_rat (BigQ.mul (int_to_bigQ x) (int_to_bigQ y)) = (ratz x * ratz y)%R.
+Proof. by rewrite bigQ_to_rat_mul !int_to_bigQK. Qed.
 
-Goal fracq (3,6)%R = fracq (1,2)%R.
-trakt bigQ Prop. rewrite /fracq /= /fracq_opt_subdef /=.
-Abort.
+Inductive formula : Type :=
+  |Int: int -> formula
+  |Opp: formula -> formula
+  |Inv: formula -> formula
+  |Mul: formula -> formula -> formula.
+
+Fixpoint form_to_bigQ (x : formula):=
+  match x with
+  |Int n => int_to_bigQ n
+  |Opp x' => BigQ.opp (form_to_bigQ x')
+  |Inv x' => BigQ.inv (form_to_bigQ x')
+  |Mul x' y' => BigQ.mul (form_to_bigQ x') (form_to_bigQ y')
+  end.
+
+Fixpoint form_to_rat (x : formula):=
+  match x with
+  |Int n => ratz n
+  |Opp x' => (- (form_to_rat x'))%R
+  |Inv x' => ((form_to_rat x')^-1)%R
+  |Mul x' y' => ((form_to_rat x') * (form_to_rat y'))%R
+  end.
+
+Lemma foo (x : formula):
+  bigQ_to_rat (form_to_bigQ x) = form_to_rat x.
+Proof.
+elim: x.
+- by move=> n /=; rewrite int_to_bigQK.
+- by move=> f /=; rewrite bigQ_to_rat_opp => ->.
+- by move=> f /= <-; rewrite bigQ_to_rat_inv.
+- by move=> f /= <- f' <-; rewrite bigQ_to_rat_mul.
+Qed.
 
 End BigQRat.
