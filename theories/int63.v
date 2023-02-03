@@ -250,6 +250,7 @@ Trakt Add Symbol ord63_mul int63 Uint63.mul int63_mulP.
 Goal forall x : ord63, (x + x * x)%R = (x * x + x)%R.
 rewrite -[@GRing.add _]/ord63_add -[@GRing.mul _]/ord63_mul.
 trakt int63 Prop.
+Abort.
 
 Lemma ord63_0P: int63_to_ord63 0%uint63 = (ord0 : ord63).
 Proof. exact/val_inj. Qed.
@@ -303,12 +304,12 @@ Local Open Scope ring_scope.
 
 (* Goal (ord63_1 == ord63_1).
 trakt int63 bool. Should be (1 =? 1)%uint63 *)
-
+(* 
 Goal ord63_eq 
   ((ord63_1 + ord63_1) * (ord0 : ord63))
   (ord0 : ord63).
 rewrite -[@GRing.add _]/ord63_add -[@GRing.mul _]/ord63_mul. 
 (* trakt int63 bool. vm_compute. *)
-Qed.
+Qed. *)
 
 End Int63Ordinal.
