@@ -2,6 +2,7 @@
 From Coq      Require Import Uint63 BinNat.
 From mathcomp Require Import all_ssreflect all_algebra.
 From Trakt Require Import Trakt.
+(* Cannot be treated twice by coqtop *)
 
 (* -------------------------------------------------------------------- *)
 Set   Implicit Arguments.
@@ -189,7 +190,7 @@ Abort.
 
 Goal forall x : int63, (x =? x)%uint63 -> x = x.
 trakt ord63 Prop.
-(* Is it okay ?*)
+(* Expected : forall x' : ord63, ord63_eqb x' x' -> x' = x' *)
 Abort. 
 
 Definition ord63_add (x y : ord63) : ord63 := (x + y)%R.
@@ -223,6 +224,7 @@ Goal forall x : ord63, (x + x)%R = x.
 rewrite -?[GRing.Zmodule.sort _]/ord63.
 rewrite -?[GRing.Ring.sort _]/ord63.
 rewrite -[@GRing.add _]/ord63_add.
+(* We need all of that *)
 trakt int63 Prop.
 Abort.
 
