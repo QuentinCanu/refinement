@@ -20,10 +20,20 @@ Section CoqEAL_binrat.
 From CoqEAL Require Import binrat.
 From Bignums Require Import BigQ.
 
-Goal (10 < 10^(3+3) :> rat) -> (10 < 1000^2 :> rat). 
+Goal (10 < 10^(3+3) :> rat) -> 10 < 1000^2 :> rat. 
 Time by coqeal. (* 15s *)
 Restart.
 Time by vm_compute.
+Qed.
+
+Notation "[ x ]" := (bigQ2rat x).
+
+Goal (10 < 100 :> rat) ==> (100 < 1000 :> rat).
+Time by coqeal. (* 1.519s *)
+Qed.
+
+Goal ([10] < [100]) ==> ([100] < [1000]).
+Time by coqeal. (*0.013s*)
 Qed.
 
 End CoqEAL_binrat.
