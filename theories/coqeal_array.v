@@ -10,16 +10,25 @@ Unset SsrOldRewriteGoalsOrder.
 
 Import Refinements Op.
 
-Section NatArray.
+Section boolArray.
 
-Definition natArray := array nat.
-Definition natSeq := seq nat.
+Definition boolArray := array bool.
+Definition boolSeq := seq bool.
 
-Definition arr_to_seq (a : natArray) : natSeq :=
+Definition arr_to_seq (a : boolArray) : boolSeq :=
   rev (ifold (fun i s=> a.[i] :: s) (length a) [::]).
 
-Global Instance arr_seq_spec : spec_of natArray natSeq :=
+Global Instance arr_seq_spec : spec_of boolArray boolSeq :=
   arr_to_seq.
 
+Definition arr_seq_rel := fun_hrel arr_to_seq.
 
-End NatArray.
+Global Instance refine_arr_seq_spec: 
+  refines (eq ==> arr_seq_rel)%rel spec spec_id.
+Proof. 
+rewrite refinesE=> x ? <-.
+by rewrite /arr_seq_rel /fun_hrel /spec /spec_id /arr_seq_spec.
+Qed.
+
+
+End boolArray.
