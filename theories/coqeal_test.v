@@ -28,12 +28,12 @@ Qed.
 
 Notation "[ x ]" := (bigQ2rat x).
 
-Goal (10 < 100 :> rat) ==> (100 < 1000 :> rat).
-Time by coqeal. (* 1.519s *)
+Goal (10*10 < 100*100 :> rat) ==> (100 < 1000*100 :> rat).
+Time by coqeal. (* 2.061s *)
 Qed.
 
-Goal ([10] < [100]) ==> ([100] < [1000]).
-Time by coqeal. (*0.013s*)
+Goal ([10]*[10] < [100]*[100]) ==> ([100] < [1000]*[100]).
+Time by coqeal. (*0.029s*)
 Qed.
 
 End CoqEAL_binrat.
