@@ -5,12 +5,12 @@ From CoqEAL Require Import refinements hrel.
 Local Open Scope ring_scope.
 Import Refinements Op.
 
-(* Section CoqEAL_alone.
+Section CoqEAL_alone.
 
-Goal (10 < 10^(3+3) :> rat) -> (10 < 1000^2 :> rat). 
-Time by vm_compute.
-Restart.
+Goal (10 < 10^(3+3) :> rat) -> (10 < 1000^2 :> rat).
 Time by coqeal. (* 8s *)
+Restart.
+Time by vm_compute.
 Qed.
 
 End CoqEAL_alone.
@@ -18,11 +18,12 @@ End CoqEAL_alone.
 Section CoqEAL_binrat.
 
 From CoqEAL Require Import binrat.
+From Bignums Require Import BigQ.
 
 Goal (10 < 10^(3+3) :> rat) -> (10 < 1000^2 :> rat). 
-Time by vm_compute.
-Restart.
 Time by coqeal. (* 15s *)
+Restart.
+Time by vm_compute.
 Qed.
 
 End CoqEAL_binrat.
@@ -32,12 +33,12 @@ Section CoqEAL_rational.
 From CoqEAL Require Import rational binint binnat.
 
 Goal (10 < 10^(3+3) :> rat) -> (10 < 1000^2 :> rat). 
-Time by vm_compute.
-Restart.
 Time by coqeal. (* 15s *)
+Restart.
+Time by vm_compute.
 Qed.
 
-End CoqEAL_rational. *)
+End CoqEAL_rational.
 
 Require Import int63.
 
