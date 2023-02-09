@@ -1,7 +1,7 @@
 From Coq Require Import Uint63 PArray.
 From CoqEAL Require Import refinements hrel.
 From mathcomp Require Import all_ssreflect.
-Require Import misc.
+Require Import misc coqeal_int63.
 
 Set   Implicit Arguments.
 Unset Strict Implicit.
@@ -21,14 +21,7 @@ Definition arr_to_seq (a : boolArray) : boolSeq :=
 Global Instance arr_seq_spec : spec_of boolArray boolSeq :=
   arr_to_seq.
 
-Definition arr_seq_rel := fun_hrel arr_to_seq.
-
-Global Instance refine_arr_seq_spec: 
-  refines (eq ==> arr_seq_rel)%rel spec spec_id.
-Proof. 
-rewrite refinesE=> x ? <-.
-by rewrite /arr_seq_rel /fun_hrel /spec /spec_id /arr_seq_spec.
-Qed.
-
+(* Variant Rarr_seq (a : boolArray) (s : boolSeq) := Rarr_seq_spec
+  of r_ord63int63  *)
 
 End boolArray.
