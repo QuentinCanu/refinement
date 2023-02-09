@@ -162,8 +162,6 @@ move: (int_thresholdP x); rewrite -[X in x < X](prednK int_threshold0).
 exact/ltnSE.
 Qed.
 
-Check (OrderType _ _).
-
 Canonical int63_latticeType := LatticeType int int63_orderMixin.
 Canonical int63_bLatticeType := BLatticeType int (BottomMixin le0int).
 Canonical int63_tbLatticeType := TBLatticeType int (TopMixin leintT).

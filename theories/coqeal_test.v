@@ -6,7 +6,7 @@ From CoqEAL Require Import refinements hrel param.
 Local Open Scope ring_scope.
 Import Refinements Op.
 
-From CoqEAL Require Import binrat.
+(* From CoqEAL Require Import binrat.
 From Bignums Require Import BigQ.
 
 Section CoqEAL_binrat.
@@ -27,7 +27,34 @@ Goal ([10]*[10] < [100]*[100]) ==> ([100] < [1000]*[100]).
 by coqeal. (*0.029s*)
 Abort.
 
-End CoqEAL_binrat.
+End CoqEAL_binrat. *)
+
+From mathcomp Require Import ssrint.
+From CoqEAL Require Import seqmx.
+
+Section CoqEAL_matrix.
+
+(* Tests From CoqEAL.seqmx.*)
+
+Definition P := \matrix_(i,j < 100) (i + j)%:Z.
+Definition Q := \matrix_(i,j < 100) (i + i + 2*j)%:Z.
+
+Set Typeclasses Debug.
+Goal P == P.
+Proof.
+apply: refines_goal.
+Abort.
+
+
+Definition P' := \matrix_(i,j < 2) 1000%:Z.
+Definition Q' := \matrix_(i,j < 2) 2000%:Z.
+
+Goal P' + P' == Q'.
+Proof.
+Time by coqeal. (* 22.678s *) (*2nd trial : 73.386s*)
+Abort.
+
+End CoqEAL_matrix.
 
 (* Section CoqEAL_rational.
 
