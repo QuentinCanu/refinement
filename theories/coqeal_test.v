@@ -30,7 +30,7 @@ Abort.
 End CoqEAL_binrat. *)
 
 From mathcomp Require Import ssrint.
-From CoqEAL Require Import seqmx.
+From CoqEAL Require Import seqmx binrat.
 
 Section CoqEAL_matrix.
 
@@ -45,6 +45,15 @@ Proof.
 apply: refines_goal.
 Abort.
 
+Notation "[ x ]" := (bigQ2rat x).
+
+Definition A := \matrix_(i,j < 2) [100000].
+Definition B := \matrix_(i,j < 2) [200000].
+
+Goal A + A == B.
+Proof.
+Time by coqeal.
+Qed.
 
 Definition P' := \matrix_(i,j < 2) 1000%:Z.
 Definition Q' := \matrix_(i,j < 2) 2000%:Z.
