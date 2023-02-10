@@ -39,7 +39,6 @@ Section CoqEAL_matrix.
 Definition P := \matrix_(i,j < 100) (i + j)%:Z.
 Definition Q := \matrix_(i,j < 100) (i + i + 2*j)%:Z.
 
-Set Typeclasses Debug.
 Goal P == P.
 Proof.
 apply: refines_goal.
@@ -47,12 +46,12 @@ Abort.
 
 Notation "[ x ]" := (bigQ2rat x).
 
-Definition A := \matrix_(i,j < 2) [100000].
+Definition A := \matrix_(i,j < 100) [100000].
 Definition B := \matrix_(i,j < 2) [200000].
 
-Goal A + A == B.
+Goal A * A != 0.
 Proof.
-Time by coqeal.
+by coqeal.
 Qed.
 
 Definition P' := \matrix_(i,j < 2) 1000%:Z.

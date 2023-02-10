@@ -12,7 +12,7 @@
 (* Copyright (c) 2014  Vincent Siles                                    *)
 (* -------------------------------------------------------------------- *)
 
-From Bignums Require Import BigQ.
+(* From Bignums Require Import BigQ.
 From Coq Require Import PArith PeanoNat.
 From mathcomp Require Import all_ssreflect all_algebra.
 From Trakt Require Import Trakt.
@@ -503,4 +503,4 @@ elim: x.
 - by move=> f /= <- f' <-; rewrite bigQ_to_rat_mul.
 Qed.
 
-End BigQRat.
+End BigQRat. *)

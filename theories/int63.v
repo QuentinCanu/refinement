@@ -1,7 +1,7 @@
 (* -------------------------------------------------------------------- *)
 From Coq      Require Import Uint63 BinNat.
 From mathcomp Require Import all_ssreflect all_algebra.
-From Trakt Require Import Trakt.
+(* From Trakt Require Import Trakt. *)
 (* Cannot be treated twice by coqtop *)
 
 (* -------------------------------------------------------------------- *)
@@ -135,8 +135,8 @@ Qed.
 Lemma ord63_to_int63K_sym: forall x : ord63, x = int63_to_ord63 (ord63_to_int63 x).
 Proof. by move=> ?; rewrite ord63_to_int63K. Qed. 
 
-Trakt Add Embedding int63 ord63 int63_to_ord63 ord63_to_int63 int63_to_ord63K ord63_to_int63K.
-Trakt Add Embedding ord63 int63 ord63_to_int63 int63_to_ord63 ord63_to_int63K_sym int63_to_ord63K_sym.
+(* Trakt Add Embedding int63 ord63 int63_to_ord63 ord63_to_int63 int63_to_ord63K ord63_to_int63K. *)
+(* Trakt Add Embedding ord63 int63 ord63_to_int63 int63_to_ord63 ord63_to_int63K_sym int63_to_ord63K_sym. *)
 
 Definition ord63_eqb (x y : ord63): bool := x == y.
 
@@ -151,18 +151,18 @@ move=> x y; rewrite -[in LHS](ord63_to_int63K x) -[in LHS](ord63_to_int63K y).
 by rewrite ord63_eqbP.
 Qed.
 
-Trakt Add Relation 2 Uint63.eqb ord63_eqb ord63_eqbP.
-Trakt Add Relation 2 ord63_eqb Uint63.eqb int63_eqbP.
+(* Trakt Add Relation 2 Uint63.eqb ord63_eqb ord63_eqbP. *)
+(* Trakt Add Relation 2 ord63_eqb Uint63.eqb int63_eqbP. *)
 
-Goal forall x : ord63, x == x.
+(* Goal forall x : ord63, x == x.
 rewrite -[@eq_op _]/(ord63_eqb).
 trakt int63 bool.
-Abort.
+Abort. *)
 
-Goal forall x : int63, (x =? x)%uint63.
+(* Goal forall x : int63, (x =? x)%uint63.
 Proof.
 trakt ord63 bool.
-Abort.
+Abort. *)
 
 Lemma ord63_eqP: forall x y : int63, x = y <-> int63_to_ord63 x = int63_to_ord63 y.
 Proof.
@@ -171,32 +171,29 @@ by move/(congr1 val)/int63_to_nat_inj.
 Qed.
 
 Lemma int63_eqP: forall x y : ord63, x = y <-> ord63_to_int63 x = ord63_to_int63 y.
-Proof.
-trakt int63 Prop. 
-move=> ??; split; first by move=> ->.
-by rewrite -!int63_to_ord63K => ->.
+Proof. 
+move=> x y; split; first by move=> ->.
+by rewrite -[x]ord63_to_int63K -[y]ord63_to_int63K -!int63_to_ord63K => ->.
 Qed.
 
-Trakt Add Relation 2 (@eq int63) (@eq ord63) ord63_eqP.
-Trakt Add Relation 2 (@eq ord63) (@eq int63) int63_eqP.
+(* Trakt Add Relation 2 (@eq int63) (@eq ord63) ord63_eqP. *)
+(* Trakt Add Relation 2 (@eq ord63) (@eq int63) int63_eqP. *)
 
-Goal forall x : int63, x = x.
+(* Goal forall x : int63, x = x.
 trakt ord63 Prop.
-Abort.
+Abort. *)
 
-Goal forall x : ord63, x = x.
+(* Goal forall x : ord63, x = x.
 trakt int63 Prop.
-Abort.
+Abort. *)
 
-Goal forall x : int63, (x =? x)%uint63 -> x = x.
+(* Goal forall x : int63, (x =? x)%uint63 -> x = x.
 trakt ord63 Prop.
 (* Expected : forall x' : ord63, ord63_eqb x' x' -> x' = x' *)
-Abort. 
-
-Definition ord63_add (x y : ord63) : ord63 := (x + y)%R.
+Abort.  *)
 
 Lemma ord63_addP: forall x y : int63,
-  int63_to_ord63 (x + y)%uint63 = ord63_add (int63_to_ord63 x) (int63_to_ord63 y).
+  int63_to_ord63 (x + y)%uint63 = ((int63_to_ord63 x) + (int63_to_ord63 y))%R.
 Proof.
 move=> x y; apply/val_inj=> /=.
 rewrite /int63_to_nat Zp_trunc_ord63E add_spec.
@@ -207,31 +204,29 @@ by rewrite wB_def plusE peano_modE.
 Qed.
 
 Lemma int63_addP: forall x y : ord63,
-  ord63_to_int63 (ord63_add x y) = (ord63_to_int63 x + ord63_to_int63 y)%uint63.
+  ord63_to_int63 (x + y)%R = (ord63_to_int63 x + ord63_to_int63 y)%uint63.
 Proof.
-by trakt int63 Prop=> ??; rewrite -ord63_addP -!int63_to_ord63K.
+move=> x y.
+by rewrite -[x]ord63_to_int63K -[y]ord63_to_int63K -ord63_addP -!int63_to_ord63K.
 Qed.
 
-Trakt Add Symbol Uint63.add ord63 ord63_add ord63_addP.
-Trakt Add Symbol ord63_add int63 Uint63.add int63_addP.
+(* Trakt Add Symbol Uint63.add ord63 ord63_add ord63_addP. *)
+(* Trakt Add Symbol ord63_add int63 Uint63.add int63_addP. *)
 
-Goal forall x : int63, (x + x)%uint63 = x.
+(* Goal forall x : int63, (x + x)%uint63 = x.
 trakt ord63 Prop.
-Abort.
+Abort. *)
 
-Set Printing All.
-Goal forall x : ord63, (x + x)%R = x.
+(* Goal forall x : ord63, (x + x)%R = x.
 rewrite -?[GRing.Zmodule.sort _]/ord63.
 rewrite -?[GRing.Ring.sort _]/ord63.
 rewrite -[@GRing.add _]/ord63_add.
 (* We need all of that *)
 trakt int63 Prop.
-Abort.
-
-Definition ord63_mul (x y : ord63) : ord63 := (x * y)%R.
+Abort. *)
 
 Lemma ord63_mulP: forall x y : int63,
-  int63_to_ord63 (x * y)%uint63 = ord63_mul (int63_to_ord63 x) (int63_to_ord63 y).
+  int63_to_ord63 (x * y)%uint63 = ((int63_to_ord63 x) * (int63_to_ord63 y))%R.
 Proof.
 move=> x y; apply/val_inj=> /=; rewrite Zp_trunc_ord63E.
 rewrite /int63_to_nat mul_spec Znat.Z2Nat.inj_mod;
@@ -243,67 +238,69 @@ rewrite /int63_to_nat mul_spec Znat.Z2Nat.inj_mod;
 Qed.
 
 Lemma int63_mulP: forall x y : ord63,
-  ord63_to_int63 (ord63_mul x y) =
+  ord63_to_int63 (x * y)%R =
   (ord63_to_int63 x * ord63_to_int63 y)%uint63.
 Proof.
-by trakt int63 Prop=> ??; rewrite -ord63_mulP -!int63_to_ord63K.
+move=> x y.
+by rewrite -[x]ord63_to_int63K -[y]ord63_to_int63K -ord63_mulP -!int63_to_ord63K.
 Qed.
 
-Trakt Add Symbol Uint63.mul ord63 ord63_mul ord63_mulP.
-Trakt Add Symbol ord63_mul int63 Uint63.mul int63_mulP.
+(* Trakt Add Symbol Uint63.mul ord63 ord63_mul ord63_mulP. *)
+(* Trakt Add Symbol ord63_mul int63 Uint63.mul int63_mulP. *)
 
-Goal forall x : ord63, (x + x * x)%R = (x * x + x)%R.
+(* Goal forall x : ord63, (x + x * x)%R = (x * x + x)%R.
 rewrite -[@GRing.add _]/ord63_add -[@GRing.mul _]/ord63_mul.
 trakt int63 Prop.
-Abort.
+Abort. *)
 
 Lemma ord63_0P: int63_to_ord63 0%uint63 = (ord0 : ord63).
 Proof. exact/val_inj. Qed.
 Lemma int63_0P: ord63_to_int63 ord0 = 0%int63.
 Proof. by []. Qed.
 
-Program Definition ord63_1 : ord63 := @Ordinal _ 1 _.
-
-Lemma ord63_1P: int63_to_ord63 1%uint63 = ord63_1.
+Lemma ord63_1P: int63_to_ord63 1%uint63 = (1%R : ord63).
 Proof. exact/val_inj. Qed.
-Lemma int63_1P: ord63_to_int63 ord63_1 = 1%uint63.
+Lemma int63_1P: ord63_to_int63 (1%R : ord63) = 1%uint63.
 Proof. by []. Qed.
 
-Trakt Add Symbol (0%uint63) ord63 (ord0 : ord63) ord63_0P.
-Trakt Add Symbol (1%uint63) ord63 (ord63_1) ord63_1P.
-Trakt Add Symbol (ord0 : ord63) int63 (0%uint63) int63_0P.
-Trakt Add Symbol (ord63_1) int63 (1%uint63) int63_1P.
-
-Definition ord63_le (x y : ord63): bool := (x <= y)%nat.
-Definition ord63_lt (x y : ord63): bool := (x < y)%nat.
+(* Trakt Add Symbol (0%uint63) ord63 (ord0 : ord63) ord63_0P. *)
+(* Trakt Add Symbol (1%uint63) ord63 (ord63_1) ord63_1P. *)
+(* Trakt Add Symbol (ord0 : ord63) int63 (0%uint63) int63_0P. *)
+(* Trakt Add Symbol (ord63_1) int63 (1%uint63) int63_1P. *)
 
 Lemma ord63_leP: forall x y : int63,
-  (x <=? y)%uint63 = ord63_le (int63_to_ord63 x) (int63_to_ord63 y).
-Proof. by rewrite /ord63_le=> x y /=; rewrite -leEint63. Qed.
+  (x <=? y)%uint63 = ((int63_to_ord63 x) <= (int63_to_ord63 y))%nat.
+Proof. by move=> x y /=; rewrite -leEint63. Qed.
 
 Lemma ord63_ltP: forall x y : int63,
-  (x <? y)%uint63 = ord63_lt (int63_to_ord63 x) (int63_to_ord63 y).
-Proof. by rewrite /ord63_lt=> x y /=; rewrite -ltEint63. Qed.
+  (x <? y)%uint63 = ((int63_to_ord63 x) < (int63_to_ord63 y))%nat.
+Proof. by move=> x y /=; rewrite -ltEint63. Qed.
 
 Lemma int63_leP: forall x y : ord63,
-  ord63_le x y = (ord63_to_int63 x <=? ord63_to_int63 y)%uint63.
-Proof. by trakt int63 bool=> ??; rewrite ord63_leP -!int63_to_ord63K. Qed.
+  (x <= y)%nat = (ord63_to_int63 x <=? ord63_to_int63 y)%uint63.
+Proof. 
+move=> x y.
+by rewrite -[x]ord63_to_int63K -[y]ord63_to_int63K ord63_leP -!int63_to_ord63K. 
+Qed.
 
 Lemma int63_ltP: forall x y : ord63,
-  ord63_lt x y = (ord63_to_int63 x <? ord63_to_int63 y)%uint63.
-Proof. by trakt int63 bool=> ??; rewrite ord63_ltP -!int63_to_ord63K. Qed.
+  (x < y)%nat = (ord63_to_int63 x <? ord63_to_int63 y)%uint63.
+Proof. 
+move=> x y.
+by rewrite -[x]ord63_to_int63K -[y]ord63_to_int63K ord63_ltP -!int63_to_ord63K. 
+Qed.
 
-Trakt Add Relation 2 (Uint63.leb) ord63_le ord63_leP.
-Trakt Add Relation 2 (Uint63.ltb) ord63_lt ord63_ltP.
-Trakt Add Relation 2 ord63_le (Uint63.leb) int63_leP.
-Trakt Add Relation 2 ord63_lt (Uint63.ltb) int63_ltP.
+(* Trakt Add Relation 2 (Uint63.leb) ord63_le ord63_leP. *)
+(* Trakt Add Relation 2 (Uint63.ltb) ord63_lt ord63_ltP. *)
+(* Trakt Add Relation 2 ord63_le (Uint63.leb) int63_leP. *)
+(* Trakt Add Relation 2 ord63_lt (Uint63.ltb) int63_ltP. *)
 
 
 (* Program Definition ord63_eqMixin := @EqMixin ord63 ord63_eq _.
 Next Obligation. move=> ??; exact/eqP. Qed.
 Canonical ord63_eqType := EqType ord63 ord63_eqMixin. *)
 
-Trakt Add Conversion (@eq_op).
+(* Trakt Add Conversion (@eq_op). *)
 
 Local Open Scope ring_scope.
 
