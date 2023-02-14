@@ -3,7 +3,7 @@ From mathcomp Require Import all_ssreflect all_algebra.
 From CoqEAL Require Import refinements hrel param.
 Local Open Scope ring_scope.
 Import Refinements Op.
-Require Import int63.
+Require Import int63 int63_ordinal.
 
 Section InstancesInt63.
 
@@ -61,8 +61,9 @@ End RefineInt63Nat.
 
 Section TestNat.
 
-Goal int63_to_nat 10 == int63_to_nat 10.
+Goal (int63_to_nat 5 <= int63_to_nat 10)%O.
 Proof.
+Set Typeclasses Debug.
 by coqeal.
 Abort.
 

@@ -29,8 +29,11 @@ Abort.
 
 End CoqEAL_binrat. *)
 
+(* Eval compute in (100000000 + 100000000)%Z. *)
+
 From mathcomp Require Import ssrint.
-From CoqEAL Require Import seqmx binrat.
+From CoqEAL Require Import seqmx binint.
+From Coq Require Import ZArith.
 
 Section CoqEAL_matrix.
 
@@ -44,23 +47,29 @@ Proof.
 apply: refines_goal.
 Abort.
 
-Notation "[ x ]" := (bigQ2rat x).
+(* Notation "[ x ]" := (bigQ2rat x).
 
 Definition A := \matrix_(i,j < 100) [100000].
-Definition B := \matrix_(i,j < 2) [200000].
+Definition B := \matrix_(i,j < 100) [200000].
 
-Goal A * A != 0.
+Goal A + A == B.
 Proof.
 by coqeal.
-Qed.
+Qed. *)
 
-Definition P' := \matrix_(i,j < 2) 1000%:Z.
-Definition Q' := \matrix_(i,j < 2) 2000%:Z.
+Goal 1000%:Z + 1000%:Z == 2000%:Z.
+Proof.
+coqeal.
+Abort.
+
+(* Definition P' := \matrix_(i,j < 2) (int_of_Z (1000 : BinInt.Z)%Z).
+Definition Q' := \matrix_(i,j < 2) int_of_Z 2000.
 
 Goal P' + P' == Q'.
 Proof.
+Set Typeclasses Debug.
 Time by coqeal. (* 22.678s *) (*2nd trial : 73.386s*)
-Abort.
+Abort. *)
 
 End CoqEAL_matrix.
 
