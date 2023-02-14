@@ -90,6 +90,7 @@ Trakt Add Symbol ord63_mul int63 Uint63.mul int63_mulP.
 
 Goal forall x : ord63, (x + x * x)%R = (x * x + x)%R.
 rewrite -[@GRing.add _]/ord63_add -[@GRing.mul _]/ord63_mul.
+rewrite -[@GRing.Zmodule.sort _]/ord63.
 trakt int63 Prop.
 Abort.
 
@@ -104,6 +105,17 @@ Trakt Add Symbol (1%uint63) ord63 (ord63_1) ord63_1P.
 Trakt Add Symbol (ord0 : ord63) int63 (0%uint63) int63_0P.
 Trakt Add Symbol (ord63_1) int63 (1%uint63) int63_1P.
 
+Goal 1%R = (0 + 1)%R :> ord63.
+rewrite -[@GRing.one _]/ord63_1 -[@GRing.add _]/ord63_add.
+rewrite -[@GRing.zero _]/(ord0 : ord63).
+trakt int63 Prop.
+Abort.
+
+Goal 0%uint63 = (0 * 1)%uint63.
+trakt ord63 Prop.
+rewrite /=.
+Abort.
+
 End Const.
 
 Section LeLt.
@@ -116,6 +128,47 @@ Trakt Add Relation 2 (Uint63.ltb) ord63_lt ord63_ltP.
 Trakt Add Relation 2 ord63_le (Uint63.leb) int63_leP.
 Trakt Add Relation 2 ord63_lt (Uint63.ltb) int63_ltP.
 
+Goal forall x y : int63, (x <? y)%uint63 -> (x <=? y)%uint63.
+trakt ord63 bool.
+Abort.
+
+Goal forall x y : ord63, (x < y)%O -> (x <= y)%O.
+rewrite -[@Order.lt _ _]/ord63_lt -[@Order.le _ _]/ord63_le.
+trakt int63 bool.
+Abort.
+
 End LeLt.
 
 End TraktDef.
+
+Section Preprocessing.
+
+Ltac ord63_preprocess := 
+  rewrite
+  -?[@GRing.Zmodule.sort _]/ord63
+  -?[@GRing.add _]/ord63_add -?[@GRing.mul _]/ord63_mul
+  -?[@eq_op _]/ord63_eqb 
+  -?[@Order.le _ _]/ord63_le -?[@Order.lt _ _]/ord63_lt
+  -?[@GRing.one _]/ord63_1 -?[@GRing.zero _]/(ord0 : ord63).
+
+Goal forall x : ord63, (x + x)%R == (x * x)%R.
+ord63_preprocess.
+trakt int63 bool.
+Abort.
+
+Goal forall x : ord63, (x + x)%R = (x * x)%R.
+ord63_preprocess.
+trakt int63 Prop.
+Abort.
+
+Goal (0 + 0 * 1)%R = (1 * 0 + 0 * 1)%R :> ord63.
+ord63_preprocess.
+trakt int63 Prop.
+Abort.
+
+Goal ((0%R : ord63) < (1%R : ord63))%O.
+ord63_preprocess.
+trakt int63 bool.
+Abort.
+
+End Preprocessing.
