@@ -63,7 +63,6 @@ Section TestNat.
 
 Goal (int63_to_nat 5 <= int63_to_nat 10)%O.
 Proof.
-Set Typeclasses Debug.
 by coqeal.
 Abort.
 

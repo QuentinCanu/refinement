@@ -139,9 +139,19 @@ Abort.
 
 End LeLt.
 
+Section Exp.
+
+Definition ord63_exp (x n : ord63) := (x ^ n)%R.
+
+(* Trakt Add Symbol (fun n : N => int63_exp^~n) (fun n : N => ord63_exp^~n) foo. *)
+
+End Exp.
+
 End TraktDef.
 
 Section Preprocessing.
+
+Local Open Scope ring_scope.
 
 Ltac ord63_preprocess := 
   rewrite
@@ -151,7 +161,10 @@ Ltac ord63_preprocess :=
   -?[@Order.le _ _]/ord63_le -?[@Order.lt _ _]/ord63_lt
   -?[@GRing.one _]/ord63_1 -?[@GRing.zero _]/(ord0 : ord63).
 
-Goal forall x : ord63, (x + x)%R == (x * x)%R.
+Ltac int63_postprocess :=
+  rewrite -?int63_to_ord63K.
+
+Goal forall x : ord63, (x + x) == (x * x).
 ord63_preprocess.
 trakt int63 bool.
 Abort.
@@ -170,5 +183,14 @@ Goal ((0%R : ord63) < (1%R : ord63))%O.
 ord63_preprocess.
 trakt int63 bool.
 Abort.
+
+Goal int63_to_ord63 12 + int63_to_ord63 13 == int63_to_ord63 25.
+ord63_preprocess.
+trakt int63 bool.
+int63_postprocess.
+vm_compute.
+Abort.
+
+Notation "[ x ]" := (int63_to_ord63 x).
 
 End Preprocessing.

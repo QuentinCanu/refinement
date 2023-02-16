@@ -2,6 +2,7 @@
 From Coq      Require Import Uint63 BinNat.
 From mathcomp Require Import all_ssreflect all_algebra.
 Require Import int63.
+Require Import NArith PArith BinNatDef BinPosDef.
 
 (* -------------------------------------------------------------------- *)
 Set   Implicit Arguments.
@@ -146,5 +147,33 @@ Proof.
 move=> x y.
 by rewrite -[x]ord63_to_int63K -[y]ord63_to_int63K ord63_ltP -!int63_to_ord63K. 
 Qed.
+
+Fixpoint int63_exp_ (fuel : nat) (x n : int63):=
+  if (n =? 0)%uint63 then 1%uint63 else
+    if fuel is k.+1 then
+      if is_even n then 
+        (int63_exp_ k x (n >> 1)%uint63 * int63_exp_ k x (n >> 1))%uint63 else 
+      (x * (int63_exp_ k x (n >> 1)) * (int63_exp_ k x (n >> 1)))%uint63
+    else x.
+  
+Definition int63_exp (x n : int63):=
+  int63_exp_ Uint63.size x n.
+
+Lemma ord63_expP (x n : int63):
+  int63_to_ord63 (int63_exp x n) = ((int63_to_ord63 x) ^ (int63_to_ord63 n))%R.
+Proof.
+apply/val_inj=> /=.
+rewrite /int63_exp.
+Admitted.
+
+Lemma int63_expP (x : ord63) (n : N):
+  ord63_to_int63 (x ^ n)%R = int63_exp (ord63_to_int63 x) n.
+Proof.
+Admitted.
+
+
+
+
+
 
 End Int63Ordinal.
